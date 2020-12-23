@@ -19,7 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="def.h" />
     <ClInclude Include="format.h" />
+    <ClInclude Include="format_riff.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
