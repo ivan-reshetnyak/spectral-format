@@ -10,10 +10,10 @@
 namespace spectral {
 
 
-class format {
+class format_t {
 public:
-  format() = default;
-  virtual ~format() = default;
+  format_t() = default;
+  virtual ~format_t() = default;
 
   virtual void Read( const std::string &FileName ) = 0;
   virtual void Write( const std::string &FileName ) = 0;
