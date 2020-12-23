@@ -32,5 +32,8 @@
     <ClCompile Include="pch.cpp">
       <Filter>Header Files</Filter>
     </ClCompile>
+    <ClCompile Include="format_riff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
