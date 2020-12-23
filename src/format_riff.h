@@ -11,7 +11,6 @@
 #include <memory>
 #include <vector>
 
-#include "def.h"
 #include "format.h"
 
 namespace spectral {

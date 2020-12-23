@@ -5,6 +5,7 @@
 
 #include "pch.h"
 
+#include "def.h"
 #include "format_riff.h"
 
 namespace spectral {
