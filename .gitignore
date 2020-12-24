@@ -4,3 +4,6 @@
 
 # Build results
 build/
+
+# Runtime generated files
+out/

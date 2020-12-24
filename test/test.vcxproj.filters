@@ -7,7 +7,7 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
@@ -15,30 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="format.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="format_riff.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="format_wav.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="format_raw.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="pch.cpp">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="format_riff.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="format_wav.cpp">
+    <ClCompile Include="test_format_riff.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
