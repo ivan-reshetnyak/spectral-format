@@ -10,3 +10,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+
+/*******
+ * Stable code
+ *******/
+#include "memhooks/memhooks.h"

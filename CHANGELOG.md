@@ -2,10 +2,11 @@
 All notable changes to this project will be documented in this file.
 
 
-## [0.3.0] - 2020-12-25
+## [0.3.1] - 2020-12-25
 ### Added:
 - WAVE chunk handlers (fmt/data)
 - RIFF data printout
+- Debug memory hook submodule
 
 
 ## [0.1.4] - 2020-12-25
