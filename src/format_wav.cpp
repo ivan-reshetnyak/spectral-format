@@ -24,15 +24,28 @@ void wav_format::Clear() {
 
 
 void wav_format::Write( FILE *File ) const {
+  fwrite(&ID, sizeof(ID), 1, File);
+  fwrite(&Size, sizeof(Size), 1, File);
   int BytesWritten = 0;
   BytesWritten += fwrite(&Format, sizeof(Format), 1, File) * sizeof(Format);
-  BytesWritten += fwrite(&NumOfChannels, sizeof(Format), 1, File) * sizeof(NumOfChannels);
+  BytesWritten += fwrite(&NumOfChannels, sizeof(NumOfChannels), 1, File) * sizeof(NumOfChannels);
   BytesWritten += fwrite(&SamplingRate, sizeof(SamplingRate), 1, File) * sizeof(SamplingRate);
   BytesWritten += fwrite(&AverageBPS, sizeof(AverageBPS), 1, File) * sizeof(AverageBPS);
   BytesWritten += fwrite(&BlockAlign, sizeof(BlockAlign), 1, File) * sizeof(BlockAlign);
   if (BytesWritten < Size)
     fwrite(&SpecificFields[0], Size - BytesWritten, 1, File);
   AddPadByte(File);
+}
+
+
+std::ostream & wav_format::Print( std::ostream &Stream ) const {
+  return Stream <<
+    "fmt chunk with size: " << Size << " bytes begin" << std::endl <<
+    "Format: " << Format << "; Number of channels: " << NumOfChannels <<
+    "; Block alignment: " << BlockAlign << "; Sample rate: " << SamplingRate <<
+    "; Average BPS:" << AverageBPS << "; " << std::endl <<
+    Size - CommonFieldSize << " bytes of format-specific fields" << std::endl <<
+    "fmt chunk end" << std::endl;
 }
 
 
@@ -67,15 +80,20 @@ void wav_data::Clear() {
 
 
 void wav_data::Write( FILE *File ) const {
+  fwrite(&ID, sizeof(ID), 1, File);
+  fwrite(&Size, sizeof(Size), 1, File);
   if (Data != nullptr)
     fwrite(&Data[0], Size, 1, File);
   AddPadByte(File);
 }
 
 
+std::ostream & wav_data::Print( std::ostream &Stream ) const {
+  return Stream << "WAVE chunk with size: " << Size << " bytes" << std::endl;
+}
+
+
 void wav_data::Read( FILE *File ) {
-  fread(&ID, sizeof(ID), 1, File);
-  fread(&Size, sizeof(Size), 1, File);
   Data = std::make_unique<byte[]>(Size);
   fread(&Data[0], Size, 1, File);
   AddPadByte(File);

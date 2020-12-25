@@ -35,6 +35,14 @@ void riff::chunk_t::AddPadByte( FILE *File ) const {
 }
 
 
+std::ostream & riff::chunk_t::Print( std::ostream &Stream ) const {
+  return Stream <<
+    "Unrecognised chunk with ID: " << ID << "(" << (char)(ID & 0xFF) <<
+    (char)(ID >> 8 & 0xFF) << (char)(ID >> 16 & 0xFF) << (char)(ID >> 24 & 0xFF) <<
+    "), size: " << Size << " bytes" << std::endl;
+}
+
+
 riff::riff() : DefaultFactory(std::make_shared<chunk::unknown::factory>()) {
   this->operator<<(std::make_pair<>(chunk::riff::Tag, std::make_shared<chunk::riff::factory>(*this)));
 }
@@ -73,6 +81,15 @@ void riff::Write( const std::string &FileName ) const {
   for (const auto &Chunk : Chunks)
     Chunk->Write(File);
   fclose(File);
+}
+
+
+std::ostream & riff::Print( std::ostream &Stream ) const {
+  Stream << "RIFF file begin" << std::endl;
+  for (const auto &Chunk : Chunks)
+    Chunk->Print(Stream);
+  Stream << "RIFF file end" << std::endl;
+  return Stream;
 }
 
 
@@ -145,6 +162,15 @@ void riff::Write( FILE *File ) const {
   for (const auto &Subchunk : Subchunks)
     Subchunk->Write(File);
   AddPadByte(File);
+}
+
+
+std::ostream & riff::Print( std::ostream &Stream ) const {
+  Stream << "RIFF chunk begin, size: " << Size << " bytes" << std::endl;
+  for (const auto &Subchunk : Subchunks)
+    Subchunk->Print(Stream);
+  Stream << "RIFF chunk end" << std::endl;
+  return Stream;
 }
 
 

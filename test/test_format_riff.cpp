@@ -1,5 +1,8 @@
 #include <cstdio>
 
+#include <iostream>
+#include <fstream>
+
 #include <CppUnitTest.h>
 
 #include "format.h"
@@ -69,10 +72,20 @@ public:
   TEST_METHOD(TestRW_RIFF_WAVE) {
     format::riff File;
     File
-      << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::riff::factory>(File))
-      << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::wav_format::factory>())
-      << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::wav_data::factory>());
+      << std::make_pair<>(format::chunk::wav_format::Tag, std::make_shared<format::chunk::wav_format::factory>())
+      << std::make_pair<>(format::chunk::wav_data::Tag, std::make_shared<format::chunk::wav_data::factory>());
     Assert::IsTrue(TestCopy(File));
+  }
+
+
+  TEST_METHOD(Test_WAVE_Output) {
+    format::riff File;
+    File
+      << std::make_pair<>(format::chunk::wav_format::Tag, std::make_shared<format::chunk::wav_format::factory>())
+      << std::make_pair<>(format::chunk::wav_data::Tag, std::make_shared<format::chunk::wav_data::factory>());
+    File.Read(SolutionDir "assets/wav_1m.wav");
+    std::ofstream Out(SolutionDir "out/TEST_WAVE_Output.out");
+    File.Print(Out);
   }
 };
 

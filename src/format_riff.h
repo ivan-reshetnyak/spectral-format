@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <stdint.h>
 
+#include <iostream>
 #include <memory>
 #include <unordered_map>
 #include <vector>
@@ -39,6 +40,7 @@ public:
     virtual void Clear();
     virtual void Write( FILE *File ) const = 0;
     virtual void Read( FILE *File ) = 0;
+    virtual std::ostream & Print( std::ostream &Stream ) const;
     void SkipPadByte( FILE *File ) const;
     void AddPadByte( FILE *File ) const;
 
@@ -55,12 +57,13 @@ public:
   virtual ~riff() = default;
   virtual void Read( const std::string &FileName ) override;
   virtual void Write( const std::string &FileName ) const override;
+  virtual std::ostream & Print( std::ostream &Stream ) const;
   riff & operator<<( const mapping::value_type &CustomChunk );
   std::shared_ptr<chunk_t> Produce( dword ID, dword Size ) const;
+  std::vector<std::shared_ptr<chunk_t>> Chunks;
 
 protected:
   mapping CustomChunks;
-  std::vector<std::shared_ptr<chunk_t>> Chunks;
   std::shared_ptr<chunk_t::factory> DefaultFactory;
 };
 
@@ -108,8 +111,9 @@ public:
 
   virtual ~riff() = default;
   virtual void Clear() override;
-  virtual void Write( FILE *File ) const override;
   virtual void Read( FILE *File ) override;
+  virtual void Write( FILE *File ) const override;
+  std::ostream & Print( std::ostream &Stream ) const override;
 
 protected:
   const ::spectral::format::riff &Mapping;

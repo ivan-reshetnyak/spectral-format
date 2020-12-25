@@ -32,9 +32,11 @@ public:
   virtual ~wav_format() = default;
   virtual void Clear() override;
   virtual void Write( FILE *File ) const override;
+  std::ostream & Print( std::ostream &Stream ) const override;
   virtual void Read( FILE *File ) override;
 
 protected:
+  static const int CommonFieldSize = sizeof(word) * 3 + sizeof(dword) * 2;
   wav_format( dword ID, dword Size );
 };
 
@@ -55,6 +57,7 @@ public:
   virtual ~wav_data() = default;
   virtual void Clear() override;
   virtual void Write( FILE *File ) const override;
+  std::ostream & Print( std::ostream &Stream ) const override;
   virtual void Read( FILE *File ) override;
 
 protected:
