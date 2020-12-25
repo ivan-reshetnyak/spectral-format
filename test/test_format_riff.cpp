@@ -13,8 +13,7 @@ namespace test {
 
 TEST_CLASS(test_format_riff) {
 public:
-  TEST_METHOD(TestRW) {
-    format::riff File;
+  bool TestCopy( format::riff &File ) {
     std::string 
       FileNameIn = SolutionDir "assets/wav_1m.wav",
       FileNameOut = SolutionDir "out/wav_1m.wav";
@@ -28,8 +27,7 @@ public:
 
     if (FileOut == nullptr) {
       fclose(FileOut);
-      Assert::Fail();
-      return;
+      return false;
     }
     fseek(FileIn, 0, SEEK_END);
     int FInSize = ftell(FileIn);
@@ -41,8 +39,7 @@ public:
     if (FInSize != FOutSize) {
       fclose(FileOut);
       fclose(FileIn);
-      Assert::Fail();
-      return;
+      return false;
     }
 
     format::byte
@@ -54,12 +51,24 @@ public:
       if (BufIn[i] != BufOut[i]) {
         fclose(FileOut);
         fclose(FileIn);
-        Assert::Fail();
-        return;
+        return false;
       }
 
     fclose(FileOut);
     fclose(FileIn);
+    return true;
+  }
+
+  TEST_METHOD(TestRWDefault) {
+    format::riff File;
+    Assert::IsTrue(TestCopy(File));
+  }
+
+
+  TEST_METHOD(TestRWRIFF) {
+    format::riff File;
+    File << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::riff::factory>(File));
+    Assert::IsTrue(TestCopy(File));
   }
 };
 
