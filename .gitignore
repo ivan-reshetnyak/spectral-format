@@ -1,0 +1,9 @@
+# Visual Studio files
+.vs/
+*.user
+
+# Build results
+build/
+
+# Runtime generated files
+out/
