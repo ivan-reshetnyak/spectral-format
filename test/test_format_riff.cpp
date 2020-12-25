@@ -1,9 +1,13 @@
 #include <cstdio>
 
+#include <iostream>
+#include <fstream>
+
 #include <CppUnitTest.h>
 
 #include "format.h"
 #include "format_riff.h"
+#include "format_wav.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -13,8 +17,7 @@ namespace test {
 
 TEST_CLASS(test_format_riff) {
 public:
-  TEST_METHOD(TestRW) {
-    format::riff File;
+  bool TestCopy( format::riff &File ) {
     std::string 
       FileNameIn = SolutionDir "assets/wav_1m.wav",
       FileNameOut = SolutionDir "out/wav_1m.wav";
@@ -28,8 +31,7 @@ public:
 
     if (FileOut == nullptr) {
       fclose(FileOut);
-      Assert::Fail();
-      return;
+      return false;
     }
     fseek(FileIn, 0, SEEK_END);
     int FInSize = ftell(FileIn);
@@ -41,8 +43,7 @@ public:
     if (FInSize != FOutSize) {
       fclose(FileOut);
       fclose(FileIn);
-      Assert::Fail();
-      return;
+      return false;
     }
 
     format::byte
@@ -54,12 +55,37 @@ public:
       if (BufIn[i] != BufOut[i]) {
         fclose(FileOut);
         fclose(FileIn);
-        Assert::Fail();
-        return;
+        return false;
       }
 
     fclose(FileOut);
     fclose(FileIn);
+    return true;
+  }
+
+  TEST_METHOD(TestRWDefault) {
+    format::riff File;
+    Assert::IsTrue(TestCopy(File));
+  }
+
+
+  TEST_METHOD(TestRW_RIFF_WAVE) {
+    format::riff File;
+    File
+      << std::make_pair<>(format::chunk::wav_format::Tag, std::make_shared<format::chunk::wav_format::factory>())
+      << std::make_pair<>(format::chunk::wav_data::Tag, std::make_shared<format::chunk::wav_data::factory>());
+    Assert::IsTrue(TestCopy(File));
+  }
+
+
+  TEST_METHOD(Test_WAVE_Output) {
+    format::riff File;
+    File
+      << std::make_pair<>(format::chunk::wav_format::Tag, std::make_shared<format::chunk::wav_format::factory>())
+      << std::make_pair<>(format::chunk::wav_data::Tag, std::make_shared<format::chunk::wav_data::factory>());
+    File.Read(SolutionDir "assets/wav_1m.wav");
+    std::ofstream Out(SolutionDir "out/TEST_WAVE_Output.out");
+    File.Print(Out);
   }
 };
 

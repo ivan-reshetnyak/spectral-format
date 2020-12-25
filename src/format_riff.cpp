@@ -35,7 +35,16 @@ void riff::chunk_t::AddPadByte( FILE *File ) const {
 }
 
 
+std::ostream & riff::chunk_t::Print( std::ostream &Stream ) const {
+  return Stream <<
+    "Unrecognised chunk with ID: " << ID << "(" << (char)(ID & 0xFF) <<
+    (char)(ID >> 8 & 0xFF) << (char)(ID >> 16 & 0xFF) << (char)(ID >> 24 & 0xFF) <<
+    "), size: " << Size << " bytes" << std::endl;
+}
+
+
 riff::riff() : DefaultFactory(std::make_shared<chunk::unknown::factory>()) {
+  this->operator<<(std::make_pair<>(chunk::riff::Tag, std::make_shared<chunk::riff::factory>(*this)));
 }
 
 
@@ -75,7 +84,16 @@ void riff::Write( const std::string &FileName ) const {
 }
 
 
-riff & riff::operator<<( const std::pair<dword, std::shared_ptr<chunk_t::factory>> &CustomChunk ) {
+std::ostream & riff::Print( std::ostream &Stream ) const {
+  Stream << "RIFF file begin" << std::endl;
+  for (const auto &Chunk : Chunks)
+    Chunk->Print(Stream);
+  Stream << "RIFF file end" << std::endl;
+  return Stream;
+}
+
+
+riff & riff::operator<<( const mapping::value_type &CustomChunk ) {
   CustomChunks.insert(CustomChunk);
   return *this;
 }
@@ -92,14 +110,13 @@ std::shared_ptr<riff::chunk_t> riff::Produce( dword ID, dword Size ) const {
 namespace chunk {
 
 
-std::shared_ptr<riff::chunk_t> unknown::factory::Create( format::dword ID, format::dword Size ) const {
+std::shared_ptr<::spectral::format::riff::chunk_t> unknown::factory::Create( format::dword ID, format::dword Size ) const {
   return std::shared_ptr<unknown>(new unknown(ID, Size));
 }
 
 
 void unknown::Clear() {
-  ID = 0;
-  Size = 0;
+  chunk_t::Clear();
   Data = nullptr;
 }
 
@@ -120,6 +137,63 @@ void unknown::Read( FILE *File ) {
 
 
 unknown::unknown( dword ID, dword Size ) : chunk_t(ID, Size) {
+}
+
+
+riff::factory::factory( const ::spectral::format::riff &Mapping ) : Mapping(Mapping) {
+}
+
+
+std::shared_ptr<::spectral::format::riff::chunk_t> riff::factory::Create( dword ID, dword Size ) const {
+  return std::shared_ptr<riff>(new riff(Mapping, ID, Size));
+}
+
+
+void riff::Clear() {
+  chunk_t::Clear();
+  Subchunks.clear();
+}
+
+
+void riff::Write( FILE *File ) const {
+  fwrite(&ID, sizeof(ID), 1, File);
+  fwrite(&Size, sizeof(Size), 1, File);
+  fwrite(&Format, sizeof(Format), 1, File);
+  for (const auto &Subchunk : Subchunks)
+    Subchunk->Write(File);
+  AddPadByte(File);
+}
+
+
+std::ostream & riff::Print( std::ostream &Stream ) const {
+  Stream << "RIFF chunk begin, size: " << Size << " bytes" << std::endl;
+  for (const auto &Subchunk : Subchunks)
+    Subchunk->Print(Stream);
+  Stream << "RIFF chunk end" << std::endl;
+  return Stream;
+}
+
+
+void riff::Read( FILE *File ) {
+  fread(&Format, sizeof(Format), 1, File);
+
+  int BytesRead = sizeof(Format);
+  while (BytesRead < Size) {
+    dword ID, Size;
+    fread(&ID, sizeof(ID), 1, File);
+    fread(&Size, sizeof(Size), 1, File);
+
+    auto NewSubchunk = Mapping.Produce(ID, Size);
+    NewSubchunk->Read(File);
+    Subchunks.push_back(NewSubchunk);
+    BytesRead += sizeof(ID) + sizeof(Size) + Size + Size % 2;
+  }
+  SkipPadByte(File);
+}
+
+
+riff::riff( const ::spectral::format::riff &Mapping, dword ID, dword Size ) :
+    chunk_t(ID, Size), Mapping(Mapping) {
 }
 
 
