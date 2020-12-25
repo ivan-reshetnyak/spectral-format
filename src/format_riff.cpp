@@ -36,6 +36,7 @@ void riff::chunk_t::AddPadByte( FILE *File ) const {
 
 
 riff::riff() : DefaultFactory(std::make_shared<chunk::unknown::factory>()) {
+  this->operator<<(std::make_pair<>(chunk::riff::Tag, std::make_shared<chunk::riff::factory>(*this)));
 }
 
 
@@ -98,8 +99,7 @@ std::shared_ptr<::spectral::format::riff::chunk_t> unknown::factory::Create( for
 
 
 void unknown::Clear() {
-  ID = 0;
-  Size = 0;
+  chunk_t::Clear();
   Data = nullptr;
 }
 
@@ -133,8 +133,7 @@ std::shared_ptr<::spectral::format::riff::chunk_t> riff::factory::Create( dword 
 
 
 void riff::Clear() {
-  ID = 0;
-  Size = 0;
+  chunk_t::Clear();
   Subchunks.clear();
 }
 
@@ -163,6 +162,7 @@ void riff::Read( FILE *File ) {
     Subchunks.push_back(NewSubchunk);
     BytesRead += sizeof(ID) + sizeof(Size) + Size + Size % 2;
   }
+  SkipPadByte(File);
 }
 
 

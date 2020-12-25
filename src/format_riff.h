@@ -106,7 +106,7 @@ public:
   };
   friend factory;
 
-  ~riff() = default;
+  virtual ~riff() = default;
   virtual void Clear() override;
   virtual void Write( FILE *File ) const override;
   virtual void Read( FILE *File ) override;

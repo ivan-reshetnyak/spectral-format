@@ -4,6 +4,7 @@
 
 #include "format.h"
 #include "format_riff.h"
+#include "format_wav.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -65,9 +66,12 @@ public:
   }
 
 
-  TEST_METHOD(TestRWRIFF) {
+  TEST_METHOD(TestRW_RIFF_WAVE) {
     format::riff File;
-    File << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::riff::factory>(File));
+    File
+      << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::riff::factory>(File))
+      << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::wav_format::factory>())
+      << std::make_pair<>(format::chunk::riff::Tag, std::make_shared<format::chunk::wav_data::factory>());
     Assert::IsTrue(TestCopy(File));
   }
 };

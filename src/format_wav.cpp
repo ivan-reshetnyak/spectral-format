@@ -9,38 +9,83 @@
 
 namespace spectral {
 namespace format {
+namespace chunk {
 
 
-wav::subchunk_audio_format::subchunk_audio_format( int32_t ID, int32_t Size,
-                                                   int16_t Tag, int16_t NumOfChannels, int16_t BlockAlign,
-                                                   int32_t SamplingRate, int32_t AverageBPS ) :
-    Tag(Tag), NumOfChannels(NumOfChannels), BlockAlign(BlockAlign),
-    SamplingRate(SamplingRate), AverageBPS(AverageBPS),
-    subchunk(ID, Size) {
+std::shared_ptr<::spectral::format::riff::chunk_t> wav_format::factory::Create( dword ID, dword Size ) const {
+  return std::shared_ptr<wav_format>(new wav_format(ID, Size));
 }
 
 
-wav::subchunk_audio_format::subchunk_audio_format( int32_t ID,
-                                                   int16_t Tag, int16_t NumOfChannels, int16_t BlockAlign,
-                                                   int32_t SamplingRate, int32_t AverageBPS ) :
-    subchunk_audio_format(ID, DataSize, Tag, NumOfChannels, BlockAlign, SamplingRate, AverageBPS) {
+void wav_format::Clear() {
+  chunk_t::Clear();
+  SpecificFields = nullptr;
 }
 
 
-wav::subchunk_audio_data::subchunk_audio_data( int32_t NumOfSamples, int32_t SizeOfSample,
-                                               int32_t NumOfChannels, void *Data ) :
-    NumOfSamples(NumOfSamples), SizeOfSample(SizeOfSample),
-    NumOfChannels(NumOfChannels), Data(Data) {
+void wav_format::Write( FILE *File ) const {
+  int BytesWritten = 0;
+  BytesWritten += fwrite(&Format, sizeof(Format), 1, File) * sizeof(Format);
+  BytesWritten += fwrite(&NumOfChannels, sizeof(Format), 1, File) * sizeof(NumOfChannels);
+  BytesWritten += fwrite(&SamplingRate, sizeof(SamplingRate), 1, File) * sizeof(SamplingRate);
+  BytesWritten += fwrite(&AverageBPS, sizeof(AverageBPS), 1, File) * sizeof(AverageBPS);
+  BytesWritten += fwrite(&BlockAlign, sizeof(BlockAlign), 1, File) * sizeof(BlockAlign);
+  if (BytesWritten < Size)
+    fwrite(&SpecificFields[0], Size - BytesWritten, 1, File);
+  AddPadByte(File);
 }
 
 
-void wav::subchunk_audio_data::Write( FILE *File ) const {
-  // fwrite()
+void wav_format::Read( FILE *File ) {
+  int BytesRead = 0;
+  BytesRead += fread(&Format, sizeof(Format), 1, File) * sizeof(Format);
+  BytesRead += fread(&NumOfChannels, sizeof(Format), 1, File) * sizeof(NumOfChannels);
+  BytesRead += fread(&SamplingRate, sizeof(SamplingRate), 1, File) * sizeof(SamplingRate);
+  BytesRead += fread(&AverageBPS, sizeof(AverageBPS), 1, File) * sizeof(AverageBPS);
+  BytesRead += fread(&BlockAlign, sizeof(BlockAlign), 1, File) * sizeof(BlockAlign);
+  if (BytesRead < Size) {
+    SpecificFields = std::make_unique<byte[]>(Size - BytesRead);
+    fread(&SpecificFields[0], Size - BytesRead, 1, File);
+  }
+  SkipPadByte(File);
 }
 
-wav::wav() : riff(std::make_shared<chunk_t>()) {
+
+wav_format::wav_format( dword ID, dword Size ) : chunk_t(ID, Size) {
 }
 
 
+std::shared_ptr<::spectral::format::riff::chunk_t> wav_data::factory::Create( dword ID, dword Size ) const {
+  return std::shared_ptr<wav_data>(new wav_data(ID, Size));
+}
+
+
+void wav_data::Clear() {
+  chunk_t::Clear();
+  Data = nullptr;
+}
+
+
+void wav_data::Write( FILE *File ) const {
+  if (Data != nullptr)
+    fwrite(&Data[0], Size, 1, File);
+  AddPadByte(File);
+}
+
+
+void wav_data::Read( FILE *File ) {
+  fread(&ID, sizeof(ID), 1, File);
+  fread(&Size, sizeof(Size), 1, File);
+  Data = std::make_unique<byte[]>(Size);
+  fread(&Data[0], Size, 1, File);
+  AddPadByte(File);
+}
+
+
+wav_data::wav_data( dword ID, dword Size ) : chunk_t(ID, Size) {
+}
+
+
+} /* End of 'chunk' namespace */
 } /* End of 'format' namespace */
 } /* End of 'spectral' namespace */
